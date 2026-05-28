@@ -1,6 +1,6 @@
 # Api
 
-Aplikacja klient-serwer napisana w Javie z użyciem surowych gniazd TCP (bez frameworków). Projekt obejmuje warstwę klienta, serwera oraz persystencji danych, a także obsługę przesyłania plików.
+Aplikacja klient-serwer napisana w Javie z użyciem surowych gniazd TCP (bez frameworków). Architektura mikroserwisowa z bramką API routującą żądania do osobnych usług. Klient CLI i warstwa persystencji danych.
 
 ## Technologie
 
@@ -9,21 +9,32 @@ Aplikacja klient-serwer napisana w Javie z użyciem surowych gniazd TCP (bez fra
 
 ## Funkcjonalności
 
-- Komunikacja klient-serwer po protokole TCP
-- Persystencja danych (warstwa `database`)
-- Przesyłanie i przechowywanie plików (`uploads/`)
-- Architektura wielowarstwowa: klient / serwer / baza danych
+- Komunikacja klient-serwer po protokole TCP (surowe gniazda)
+- API Gateway routujący żądania do właściwej usługi
+- Osobne mikroserwisy na dedykowanych portach: rejestracja, logowanie, posty (add/get)
+- `UnifiedServer` obsługujący połączenia
+- Klient CLI (`CLI.java`) komunikujący się z systemem
+- Persystencja danych (`Database.java`)
+- Przesyłanie plików (`uploads/`)
 
 ## Struktura projektu
 
 ```
 Api/
 ├── src/
-│   ├── client/       # Logika klienta TCP
-│   ├── server/       # Logika serwera TCP
-│   └── database/     # Warstwa persystencji danych
-├── uploads/          # Przesyłane pliki
-└── serwer/           # Pliki uruchomieniowe serwera
+│   ├── client/
+│   │   └── CLI.java              # Klient wiersza poleceń
+│   ├── server/
+│   │   ├── APIGateway.java       # Bramka API
+│   │   ├── UnifiedServer.java    # Główny serwer
+│   │   ├── RegistrationServer.java
+│   │   ├── Login.java
+│   │   ├── AddPost.java
+│   │   └── GetPosts.java
+│   └── database/
+│       └── Database.java         # Warstwa persystencji
+├── uploads/                      # Przesyłane pliki
+└── serwer/                       # Pliki uruchomieniowe
 ```
 
 ## Uruchomienie
@@ -38,17 +49,17 @@ git clone https://github.com/Marvi217/Api.git
 cd Api
 ```
 
-Skompiluj projekt:
+Skompiluj projekt (z IntelliJ IDEA lub ręcznie):
 ```bash
-javac -d out src/server/*.java src/database/*.java src/client/*.java
+javac -d out src/database/*.java src/server/*.java src/client/*.java
 ```
 
 Uruchom serwer:
 ```bash
-java -cp out server.Main
+java -cp out server.UnifiedServer
 ```
 
 Uruchom klienta (w osobnym terminalu):
 ```bash
-java -cp out client.Main
+java -cp out client.CLI
 ```
